@@ -1,0 +1,40 @@
+# 小米音响控制API配置文件（示例）
+
+# 小米会话文件配置
+xiaomi:
+  token_file: ".mi_account_session.json"
+
+# 系统登录配置（示例为空，按需修改）
+system_auth:
+  users: []
+  # 示例：请务必修改默认密码后再使用
+  # - username: "admin"
+  #   password: "change-me"
+
+# JWT认证配置
+jwt:
+  secret_key: "CHANGE_ME_TO_A_STRONG_RANDOM_STRING"
+  algorithm: "HS256"
+  access_token_expire_minutes: 60
+  refresh_token_expire_days: 7
+  auto_refresh_threshold_minutes: 10
+
+# API服务配置
+api:
+  host: "127.0.0.1"  # 默认仅本机访问，生产建议置于反向代理之后
+  port: 8000
+  debug: false
+
+# 日志配置
+logging:
+  level: "INFO"
+  format: "%(asctime)s | %(levelname)s | %(message)s"
+  date_format: "%H:%M:%S"
+
+# 应用信息
+app:
+  name: "小米音响控制API"
+  version: "1.0.0"
+  description: "基于 FastAPI 和 MiService 的小米音响控制接口"
+
+

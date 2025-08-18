@@ -1,0 +1,224 @@
+{
+  "info": {
+    "name": "music-mi API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Postman collection for music-mi (FastAPI + MiService)"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8000" },
+    { "key": "bearerToken", "value": "" },
+    { "key": "deviceSelector", "value": "笨蛋小然" },
+    { "key": "playUrl", "value": "https://lhttp.qtfm.cn/live/4915/64k.mp3" }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login (/auth/login)",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"change-me\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const data = pm.response.json();",
+                  "if (data && data.access_token) {",
+                  "  pm.environment.set('bearerToken', data.access_token);",
+                  "  pm.collectionVariables.set('bearerToken', data.access_token);",
+                  "}",
+                  "pm.test('Login succeeded', function () { pm.expect(data.success).to.eql(true); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Status (/auth/status)",
+          "request": {
+            "method": "GET",
+            "header": [ { "key": "Authorization", "value": "Bearer {{bearerToken}}" } ],
+            "url": { "raw": "{{baseUrl}}/auth/status", "host": ["{{baseUrl}}"], "path": ["auth", "status"] }
+          }
+        },
+        {
+          "name": "Refresh (/auth/refresh)",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "url": { "raw": "{{baseUrl}}/auth/refresh", "host": ["{{baseUrl}}"], "path": ["auth", "refresh"] },
+            "body": { "mode": "raw", "raw": "{\n  \"refresh_token\": \"<paste refresh token>\"\n}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mi Account",
+      "item": [
+        {
+          "name": "Login (/mi/account/login)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{bearerToken}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/mi/account/login", "host": ["{{baseUrl}}"], "path": ["mi", "account", "login"] },
+            "body": { "mode": "raw", "raw": "{\n  \"username\": \"<xiaomi-account>\",\n  \"password\": \"<xiaomi-password>\"\n}" }
+          }
+        },
+        {
+          "name": "Status (/mi/account/status)",
+          "request": {
+            "method": "GET",
+            "header": [ { "key": "Authorization", "value": "Bearer {{bearerToken}}" } ],
+            "url": { "raw": "{{baseUrl}}/mi/account/status", "host": ["{{baseUrl}}"], "path": ["mi", "account", "status"] }
+          }
+        },
+        {
+          "name": "Logout (/mi/account/logout)",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Authorization", "value": "Bearer {{bearerToken}}" } ],
+            "url": { "raw": "{{baseUrl}}/mi/account/logout", "host": ["{{baseUrl}}"], "path": ["mi", "account", "logout"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Devices & Playback",
+      "item": [
+        {
+          "name": "Devices (/devices)",
+          "request": {
+            "method": "GET",
+            "header": [ { "key": "Authorization", "value": "Bearer {{bearerToken}}" } ],
+            "url": { "raw": "{{baseUrl}}/devices", "host": ["{{baseUrl}}"], "path": ["devices"] }
+          }
+        },
+        {
+          "name": "Play URL (/mi/device/playback/play-url)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{bearerToken}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/mi/device/playback/play-url", "host": ["{{baseUrl}}"], "path": ["mi","device","playback","play-url"] },
+            "body": { "mode": "raw", "raw": "{\n  \"device_selector\": \"{{deviceSelector}}\",\n  \"url\": \"{{playUrl}}\",\n  \"type\": 2\n}" }
+          }
+        },
+        {
+          "name": "Pause (/mi/device/playback/pause)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{bearerToken}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/mi/device/playback/pause", "host": ["{{baseUrl}}"], "path": ["mi","device","playback","pause"] },
+            "body": { "mode": "raw", "raw": "{\n  \"device_selector\": \"{{deviceSelector}}\"\n}" }
+          }
+        },
+        {
+          "name": "Play (/mi/device/playback/play)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{bearerToken}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/mi/device/playback/play", "host": ["{{baseUrl}}"], "path": ["mi","device","playback","play"] },
+            "body": { "mode": "raw", "raw": "{\n  \"device_selector\": \"{{deviceSelector}}\"\n}" }
+          }
+        },
+        {
+          "name": "Stop (/mi/device/playback/stop)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{bearerToken}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/mi/device/playback/stop", "host": ["{{baseUrl}}"], "path": ["mi","device","playback","stop"] },
+            "body": { "mode": "raw", "raw": "{\n  \"device_selector\": \"{{deviceSelector}}\"\n}" }
+          }
+        },
+        {
+          "name": "Playback Status (/mi/device/playback/status)",
+          "request": {
+            "method": "GET",
+            "header": [ { "key": "Authorization", "value": "Bearer {{bearerToken}}" } ],
+            "url": {
+              "raw": "{{baseUrl}}/mi/device/playback/status?device_selector={{deviceSelector}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["mi","device","playback","status"],
+              "query": [ { "key": "device_selector", "value": "{{deviceSelector}}" } ]
+            }
+          }
+        },
+        {
+          "name": "Set Volume (/mi/device/volume)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{bearerToken}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/mi/device/volume", "host": ["{{baseUrl}}"], "path": ["mi","device","volume"] },
+            "body": { "mode": "raw", "raw": "{\n  \"device_selector\": \"{{deviceSelector}}\",\n  \"volume\": 50\n}" }
+          }
+        },
+        {
+          "name": "Get Volume (/mi/device/volume)",
+          "request": {
+            "method": "GET",
+            "header": [ { "key": "Authorization", "value": "Bearer {{bearerToken}}" } ],
+            "url": {
+              "raw": "{{baseUrl}}/mi/device/volume?device_selector={{deviceSelector}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["mi","device","volume"],
+              "query": [ { "key": "device_selector", "value": "{{deviceSelector}}" } ]
+            }
+          }
+        },
+        {
+          "name": "TTS (/mi/device/tts)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{bearerToken}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/mi/device/tts", "host": ["{{baseUrl}}"], "path": ["mi","device","tts"] },
+            "body": { "mode": "raw", "raw": "{\n  \"device_selector\": \"{{deviceSelector}}\",\n  \"text\": \"你好，小米音响\"\n}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Root (/)",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/", "host": ["{{baseUrl}}"], "path": [""] } }
+        },
+        {
+          "name": "Health (/health)",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/health", "host": ["{{baseUrl}}"], "path": ["health"] } }
+        }
+      ]
+    }
+  ]
+}
+
+

@@ -120,7 +120,21 @@ class MinaProvider:
             if not username or not password:
                 raise HTTPException(status_code=400, detail="请提供小米账号与密码")
             account = MiAccount(self.http_session, username, password, self.token_path)
-            ok = await account.login("micoapi")
+            try:
+                ok = await account.login("micoapi")
+            except KeyError as exc:
+                # 兼容底层库因返回结构变化导致的 KeyError（如缺少 userId）
+                LOGGER.error("小米登录返回缺少字段：%s", exc)
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="小米账号登录失败：服务返回不兼容（缺少字段），请检查账号/密码或稍后再试"
+                )
+            except Exception as exc:
+                LOGGER.error("小米登录异常：%s", exc)
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail=f"小米账号登录失败：{str(exc)}"
+                )
             if not ok:
                 raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="小米账号登录失败")
             self.mi_account = account

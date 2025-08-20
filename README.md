@@ -128,7 +128,6 @@ MIT License
 ## Credits
 
 - [miservice](https://github.com/Yonsm/MiService)
-- [miservice-fork](https://pypi.org/project/miservice-fork)
 - [fastapi](https://github.com/fastapi/fastapi)
 - [jwt](https://github.com/jpadilla/pyjwt)
   

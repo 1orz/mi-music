@@ -1,9 +1,5 @@
 # 小米音响控制API配置文件（示例）
 
-# 小米会话文件配置
-xiaomi:
-  token_file: ".mi_account_session.json"
-
 # 系统登录配置（示例为空，按需修改）
 system_auth:
   users: []

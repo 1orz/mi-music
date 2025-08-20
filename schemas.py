@@ -33,8 +33,8 @@ class TokenRefreshResponse(BaseModel):
 
 
 class XiaomiLoginRequest(BaseModel):
-    username: Optional[str] = Field(None, description="小米账号（留空则使用 config.yml 中的账号）")
-    password: Optional[str] = Field(None, description="小米密码（留空则使用 config.yml 中的密码）")
+    username: Optional[str] = Field(None, description="小米账号")
+    password: Optional[str] = Field(None, description="小米密码")
 
 
 class DeviceInfo(BaseModel):

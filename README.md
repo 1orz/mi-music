@@ -34,20 +34,18 @@
 pip install -r requirements.txt
 ```
 
-### 2. 配置 `config.yml`
+### 2. 配置 `conf/config.yml`
 
-请勿将真实配置提交到仓库。仓库已提供 `config.example.yml`，请复制为 `config.yml` 并按需修改：
+请勿将真实配置提交到仓库。仓库已提供 `config.example.yml`，请复制到 `conf/config.yml` 并按需修改：
 
 ```bash
-cp config.example.yml config.yml
+mkdir -p conf
+cp config.example.yml conf/config.yml
 ```
 
 示例片段：
 
 ```yaml
-xiaomi:
-  token_file: ".mi_account_session.json"
-
 system_auth:
   users:
     - username: "admin"
@@ -83,8 +81,8 @@ docker build -t music-mi:latest .
 # 2) 运行容器（挂载本地配置与会话文件）
 docker run -d --name music-mi \
   -p 8000:8000 \
-  -v $(pwd)/config.yml:/app/config.yml:ro \
-  -v $(pwd)/.mi_account_session.json:/app/.mi_account_session.json \
+  -v $(pwd)/conf/config.yml:/app/conf/config.yml:ro \
+  -v $(pwd)/conf/.mi_account_session.json:/app/conf/.mi_account_session.json \
   music-mi:latest
 
 # 3) 健康检查
@@ -92,7 +90,7 @@ curl http://localhost:8000/health
 ```
 
 提示：
-- 请先用 `cp config.example.yml config.yml` 创建并填写你的配置。
+- 请先用 `mkdir -p conf && cp config.example.yml conf/config.yml` 创建并填写你的配置。
 - 默认容器监听 0.0.0.0:8000，生产环境建议置于反向代理之后，并开启 TLS。
 
 ### 主要接口
@@ -121,7 +119,7 @@ curl http://localhost:8000/health
 ## 备注
 
 - 系统登录与小米登录完全解耦：必须先系统登录成功，才允许调用任何小米相关接口。
-- 会话文件默认保存在 `.mi_account_session.json`，可在 `config.yml` 中修改。
+- 会话文件固定保存在 `conf/.mi_account_session.json`（代码中硬编码，无需配置）。
 
 ## 许可证
 

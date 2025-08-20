@@ -1,0 +1,28 @@
+networks:
+  my-stack:
+    name: my-stack
+    enable_ipv6: true
+    driver: bridge
+
+services:
+  caddy:
+    image: docker.io/cloudorz/caddy:latest
+    container_name: caddy
+    restart: always
+    networks:
+      - my-stack
+    ports:
+      - 80:80
+      - 443:443
+      - 443:443/udp
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+
+  mi-music:
+    image: ghcr.io/1orz/mi-music:latest
+    container_name: mi-music
+    restart: always
+    volumes:
+      - ./conf:/app/conf
+    networks:
+      - my-stack

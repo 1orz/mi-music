@@ -94,9 +94,9 @@ def get_router(jwt_auth: JWTAuth, system_users: dict, get_provider: Callable[[],
         try:
             await provider.ensure_mina()
             count = len(await provider.device_list())
-            return ApiResponse(success=True, message="小米已登录", data={"logged_in": True, "devices_count": count})
+            return ApiResponse(success=True, message="小米账号已登录，已获取到设备数量：" + str(count), data={"logged_in": True, "devices_count": count})
         except HTTPException:
-            return ApiResponse(success=False, message="小米未登录", data={"logged_in": False})
+            return ApiResponse(success=False, message="小米账号未登录，请先登录小米账号", data={"logged_in": False})
 
     @router.get("/devices", response_model=ApiResponse, dependencies=[Depends(jwt_auth.get_current_user)])
     async def get_devices(provider: MinaProvider = Depends(provider_dep)):

@@ -1,0 +1,7 @@
+your-domain.com {
+	reverse_proxy http://mi-music:8000 {
+		header_up Host {host}
+		header_up X-Real-IP {remote_addr}
+		header_up X-Forwarded-For {remote_addr}
+	}
+}

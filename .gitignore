@@ -4,4 +4,6 @@ __pycache__
 config.yml
 *.local.yml
 .env
-.env.*
+*.env.*
+conf/config.yml
+conf/.mi_account_session.json

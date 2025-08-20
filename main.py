@@ -25,7 +25,7 @@ from const import TTS_COMMAND
 
 
 # 配置加载函数
-def load_config(config_path: str = "config.yml") -> Dict[str, Any]:
+def load_config(config_path: str = "conf/config.yml") -> Dict[str, Any]:
     """加载YAML配置文件"""
     config_file = Path(config_path)
     if not config_file.exists():
@@ -54,9 +54,8 @@ logging.basicConfig(
     datefmt=LOG_DATE_FORMAT
 )
 
-# 小米会话文件路径
-xiaomi_config = config.get('xiaomi', {})
-MI_TOKEN_PATH = xiaomi_config.get('token_file', '.mi_account_session.json')
+# 小米会话文件路径（硬编码）
+MI_TOKEN_PATH = 'conf/.mi_account_session.json'
 
 # 系统登录配置（用于我们自己的系统登录）
 system_auth_config = config.get('system_auth', {})
@@ -66,14 +65,14 @@ SYSTEM_USERS: Dict[str, str] = {
     if isinstance(user, dict) and user.get('username') is not None
 }
 if not SYSTEM_USERS:
-    LOGGER.warning("未在 config.yml 中配置 system_auth.users，系统登录将无法通过校验")
+    LOGGER.warning("未在 conf/config.yml 中配置 system_auth.users，系统登录将无法通过校验")
 
 # JWT 配置
 jwt_config = config.get('jwt', {})
 JWT_SECRET_KEY = jwt_config.get('secret_key')
 if not JWT_SECRET_KEY:
-    LOGGER.error("JWT secret_key 未配置！请在 config.yml 中设置有效的密钥")
-    raise ValueError("JWT secret_key 必须在 config.yml 中配置")
+    LOGGER.error("JWT secret_key 未配置！请在 conf/config.yml 中设置有效的密钥")
+    raise ValueError("JWT secret_key 必须在 conf/config.yml 中配置")
 
 JWT_ALGORITHM = jwt_config.get('algorithm', 'HS256')
 JWT_EXPIRE_MINUTES = jwt_config.get('access_token_expire_minutes', 60)
@@ -130,8 +129,8 @@ class TokenRefreshResponse(BaseModel):
 
 
 class XiaomiLoginRequest(BaseModel):
-    username: Optional[str] = Field(None, description="小米账号（留空则使用 config.yml 中的账号）")
-    password: Optional[str] = Field(None, description="小米密码（留空则使用 config.yml 中的密码）")
+    username: Optional[str] = Field(None, description="小米账号")
+    password: Optional[str] = Field(None, description="小米密码")
 
 
 class DeviceInfo(BaseModel):
@@ -641,10 +640,6 @@ async def perform_tts(device_id: str, text: str, mina: MiNAService) -> Any:
 
 if __name__ == "__main__":
     import uvicorn
-    
-    # 从配置文件读取会话文件路径
-    if not MI_TOKEN_PATH:
-        LOGGER.warning("请在 config.yml 中设置 xiaomi.token_file")
     
     uvicorn.run(
         "main:app",

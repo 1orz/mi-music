@@ -78,7 +78,11 @@ def get_router(jwt_auth: JWTAuth, system_users: dict, get_provider: Callable[[],
         """小米账号登录，初始化/更新小米会话。"""
         if not request.username or not request.password:
             raise HTTPException(status_code=400, detail="请提供小米账号与密码")
-        await provider.login(request.username, request.password)
+        try:
+            await provider.login(request.username, request.password)
+        except Exception as e:
+            LOGGER.error(f"小米登录失败: {e}")
+            return ApiResponse(success=False, message="小米登录失败", data={"error": str(e)})
         devices = await provider.device_list()
         return ApiResponse(success=True, message="小米登录成功", data={"devices_count": len(devices)})
 

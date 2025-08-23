@@ -6,12 +6,6 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
-# 安装运行时必须的系统依赖（如需）
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends \
-       ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
-
 # 先复制依赖文件，利用构建缓存
 COPY requirements.txt ./
 
@@ -22,11 +16,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # 复制应用代码
 COPY . .
-
-# 创建非 root 用户并切换（确保对工作目录有写权限）
-RUN useradd -m appuser \
-    && chown -R appuser:appuser /app
-USER appuser
 
 EXPOSE 8000
 

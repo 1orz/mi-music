@@ -1,28 +1,56 @@
-networks:
-  my-stack:
-    name: my-stack
-    enable_ipv6: true
-    driver: bridge
+# Docker Compose 配置文件
+# 用于本地开发和生产部署
+
+version: '3.8'
 
 services:
-  caddy:
-    image: docker.io/cloudorz/caddy:latest
-    container_name: caddy
-    restart: always
-    networks:
-      - my-stack
+  # 后端 FastAPI 服务
+  backend:
+    image: ghcr.io/${GITHUB_REPOSITORY_OWNER:-your-username}/mi-music-backend:latest
+    container_name: mi-music-backend
     ports:
-      - 80:80
-      - 443:443
-      - 443:443/udp
+      - "8000:8000"
+    environment:
+      - ENV=production
+      - PYTHONPATH=/app
     volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile
-
-  mi-music:
-    image: ghcr.io/1orz/mi-music:latest
-    container_name: mi-music
-    restart: always
-    volumes:
-      - ./conf:/app/conf
+      - ./data:/app/data  # 持久化数据目录
+      - ./tokens:/app/tokens  # 小米账号 token 存储
     networks:
-      - my-stack
+      - mi-music-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # 前端 React 服务
+  frontend:
+    image: ghcr.io/${GITHUB_REPOSITORY_OWNER:-your-username}/mi-music-frontend:latest
+    container_name: mi-music-frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - mi-music-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  mi-music-network:
+    driver: bridge
+
+# 持久化数据卷
+volumes:
+  mi-music-data:
+    driver: local
+  mi-music-tokens:
+    driver: local

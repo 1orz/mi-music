@@ -10,7 +10,7 @@ WORKDIR /app
 COPY package*.json ./
 
 # 安装依赖
-RUN npm ci --only=production=false
+RUN npm install
 
 # 复制源代码
 COPY . .

@@ -1,0 +1,94 @@
+# Caddy 配置文件 - 小米音响控制台前端
+
+:3000 {
+	# 根目录设置
+	root * /srv
+
+	# 启用文件服务器
+	file_server
+
+	# 启用 gzip 压缩
+	encode gzip
+
+	# 健康检查端点
+	handle /health {
+		respond "healthy" 200 {
+			header Content-Type "text/plain"
+		}
+	}
+
+	# API 反向代理到后端
+	handle /api/* {
+		reverse_proxy backend:8000 {
+			# 健康检查
+			health_uri /api/health
+			health_interval 30s
+			health_timeout 5s
+			
+			# 请求头设置
+			header_up Host {upstream_hostport}
+			header_up X-Real-IP {remote_host}
+			header_up X-Forwarded-For {remote_host}
+			header_up X-Forwarded-Proto {scheme}
+		}
+	}
+
+	# 静态资源缓存策略
+	@static {
+		path *.js *.css *.png *.jpg *.jpeg *.gif *.ico *.svg *.woff *.woff2 *.ttf *.eot
+	}
+	handle @static {
+		header Cache-Control "public, max-age=31536000, immutable"
+		file_server
+	}
+
+	# SPA 路由支持 - 所有其他请求返回 index.html
+	handle {
+		try_files {path} /index.html
+		
+		# 防止缓存 index.html
+		@index {
+			path /index.html
+		}
+		header @index Cache-Control "no-cache, no-store, must-revalidate"
+		header @index Pragma "no-cache"
+		header @index Expires "0"
+		
+		file_server
+	}
+
+	# 安全头
+	header {
+		# 移除服务器信息
+		-Server
+		
+		# 安全相关头
+		X-Frame-Options "SAMEORIGIN"
+		X-XSS-Protection "1; mode=block"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "no-referrer-when-downgrade"
+		Content-Security-Policy "default-src 'self' http: https: data: blob: 'unsafe-inline'"
+		
+		# 性能相关头
+		X-DNS-Prefetch-Control "on"
+	}
+
+	# 日志配置
+	log {
+		output file /var/log/caddy/access.log {
+			roll_size 100mb
+			roll_keep 5
+			roll_keep_for 720h
+		}
+		format json
+	}
+
+	# 错误处理
+	handle_errors {
+		@404 {
+			expression {http.error.status_code} == 404
+		}
+		rewrite @404 /index.html
+		file_server
+	}
+}

@@ -1,0 +1,44 @@
+services:
+  # 后端 FastAPI 服务
+  backend:
+    image: mi-music-backend:latest  # 替换为你的后端镜像
+    container_name: mi-music-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - ENV=production
+    volumes:
+      - ./data:/app/data  # 持久化数据目录
+    networks:
+      - mi-music-network
+    restart: unless-stopped
+
+  # 前端 React 服务
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: mi-music-frontend:latest
+    container_name: mi-music-frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - mi-music-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  mi-music-network:
+    driver: bridge
+
+# 可选：如果需要持久化数据
+volumes:
+  mi-music-data:
+    driver: local

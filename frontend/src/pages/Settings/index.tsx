@@ -62,7 +62,7 @@ export const SettingsPage: React.FC = () => {
   return (
     <Space direction="vertical" size="large" style={{ width: '100%' }}>
       <div>
-        <Title level={2}>设置</Title>
+        <Title level={2}>小米音响控制台 - 设置</Title>
       </div>
 
       <Row gutter={[16, 16]}>

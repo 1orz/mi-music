@@ -50,7 +50,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
     {
       key: 'dashboard',
       icon: <DashboardOutlined />,
-      label: '控制台',
+      label: '设备管理',
     },
     {
       key: 'settings',
@@ -132,7 +132,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
       {/* 移动端抽屉导航 */}
       {!screens.lg && (
         <Drawer
-          title="菜单"
+          title="小米音响控制台"
           placement="left"
           onClose={() => setMobileDrawerOpen(false)}
           open={mobileDrawerOpen}
@@ -165,7 +165,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
             {!screens.xs && (
               <div>
                 <Text strong style={{ fontSize: screens.md ? '16px' : '14px' }}>
-                  {currentTitle}
+                  小米音响控制台 - {currentTitle}
                 </Text>
               </div>
             )}

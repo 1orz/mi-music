@@ -52,7 +52,7 @@ export const DashboardPage: React.FC = () => {
       style={{ width: '100%' }}
     >
       <div>
-        <Title level={screens.xs ? 3 : 2}>控制台</Title>
+        <Title level={screens.xs ? 3 : 2}>小米音响控制台 - 设备管理</Title>
       </div>
 
       <Row gutter={[

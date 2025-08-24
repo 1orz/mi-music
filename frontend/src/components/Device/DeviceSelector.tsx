@@ -78,12 +78,18 @@ export const DeviceSelector: React.FC<DeviceSelectorProps> = ({
             onChange={handleDeviceChange}
             notFoundContent={isLoading ? <Spin size="small" /> : "暂无设备"}
             showSearch
-            optionFilterProp="children"
+            // 仅使用 label 作为输入框内的展示，避免把下拉项的多行结构带入造成换行
+            optionLabelProp="label"
+            optionFilterProp="label"
             styles={selectPopupStyles}
             allowClear
           >
             {devices.map((device) => (
-              <Option key={device.deviceID} value={device.deviceID}>
+              <Option
+                key={device.deviceID}
+                value={device.deviceID}
+                label={device.alias || device.name || '未命名设备'}
+              >
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, width: '100%' }}>
                   <SoundOutlined style={{ flex: '0 0 auto' }} />
                   <div style={{ flex: 1, minWidth: 0 }}>

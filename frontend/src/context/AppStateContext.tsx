@@ -183,10 +183,11 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     localStorage.setItem('selectedDevice', JSON.stringify(device));
   }, []);
 
+  // 与后端交互一律使用设备唯一ID（UUID）
   const getDeviceSelector = useCallback((device?: DeviceInfo | null) => {
     const targetDevice = device ?? selectedDevice;
     if (!targetDevice) return '';
-    return targetDevice.alias || targetDevice.name || targetDevice.deviceID;
+    return targetDevice.deviceID;
   }, [selectedDevice]);
 
   // 初始化恢复选中的设备

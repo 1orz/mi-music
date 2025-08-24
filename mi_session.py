@@ -28,6 +28,7 @@ class MinaProvider:
         self._watch_task: Optional[asyncio.Task] = None
         self._stop_watch_event: Optional[asyncio.Event] = None
         self._last_mtime: Optional[float] = None
+        self.last_login_username: Optional[str] = None
 
     def set_http_session(self, session: ClientSession) -> None:
         self.http_session = session
@@ -140,12 +141,15 @@ class MinaProvider:
             self.mi_account = account
             self.mina_service = MiNAService(account)
             self._devices_cache.clear()
+            # 不再记录最近登录账号
+            self.last_login_username = None
 
     async def logout(self) -> None:
         async with self._lock:
             self.mi_account = None
             self.mina_service = None
             self._devices_cache.clear()
+            self.last_login_username = None
             # 删除会话文件
             try:
                 import os

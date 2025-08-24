@@ -124,6 +124,14 @@ export const SettingsPage: React.FC = () => {
                 />
               </div>
               
+              {/* 已登录时展示基础 ID 信息 */}
+              {xiaomiStatus.logged_in && xiaomiStatus.user_id && (
+                <div>
+                  <Text strong>User ID：</Text>
+                  <Text code>{xiaomiStatus.user_id}</Text>
+                </div>
+              )}
+
               {xiaomiStatus.logged_in && xiaomiStatus.devices_count !== undefined && (
                 <div>
                   <Text strong>设备数量：</Text>

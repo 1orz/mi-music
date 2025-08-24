@@ -51,6 +51,7 @@ export interface XiaomiLoginRequest {
 export interface XiaomiAccountStatus {
   logged_in: boolean;
   devices_count?: number;
+  user_id?: string;
 }
 
 // 设备相关类型

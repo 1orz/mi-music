@@ -95,11 +95,19 @@ def get_router(jwt_auth: JWTAuth, system_users: dict, get_provider: Callable[[],
 
     @router.get("/mi/account/status", response_model=ApiResponse, dependencies=[Depends(jwt_auth.get_current_user)])
     async def mi_status(provider: MinaProvider = Depends(provider_dep)):
-        """查询小米登录状态。"""
+        """查询小米登录状态，并在已登录时返回 userId。"""
         try:
             await provider.ensure_mina()
             count = len(await provider.device_list())
-            return ApiResponse(success=True, message="小米账号已登录，已获取到设备数量：" + str(count), data={"logged_in": True, "devices_count": count})
+            user_id = None
+            if provider.mi_account and getattr(provider.mi_account, "token", None):
+                token = provider.mi_account.token
+                if isinstance(token, dict):
+                    user_id = token.get("userId") or token.get("user_id") or token.get("cUserId")
+            data = {"logged_in": True, "devices_count": count}
+            if user_id is not None:
+                data["user_id"] = str(user_id)
+            return ApiResponse(success=True, message="小米账号已登录", data=data)
         except HTTPException:
             return ApiResponse(success=False, message="小米账号未登录，请先登录小米账号", data={"logged_in": False})
 

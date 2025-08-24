@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   Card, 
   Button, 
@@ -42,6 +42,24 @@ export const PlayerControls: React.FC<PlayerControlsProps> = ({
   const setLoading = (key: string, loading: boolean) => {
     setIsLoading(prev => ({ ...prev, [key]: loading }));
   };
+
+  // 首次加载/设备切换时获取当前设备音量，初始化滑块
+  useEffect(() => {
+    let cancelled = false;
+    const initVolume = async () => {
+      if (!deviceSelector) return;
+      try {
+        const resp = await playerService.getVolume(deviceSelector);
+        if (!cancelled && resp.success && resp.data && typeof resp.data.volume === 'number') {
+          setVolume(resp.data.volume);
+        }
+      } catch (_) {
+        // 忽略初始化音量失败，保持现有显示
+      }
+    };
+    initVolume();
+    return () => { cancelled = true; };
+  }, [deviceSelector]);
 
   // 播放URL
   const handlePlayUrl = async (values: { url: string; type?: number }) => {
@@ -131,6 +149,7 @@ export const PlayerControls: React.FC<PlayerControlsProps> = ({
       if (response.success) {
         setVolume(newVolume);
         message.success(`音量已设置为 ${newVolume}%`);
+        onPlaybackChange?.();
       } else {
         message.error(response.message || '设置音量失败');
       }

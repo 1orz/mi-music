@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Row, Col, Typography, Space, Grid } from 'antd';
 import { DeviceSelector } from '@/components/Device/DeviceSelector';
 import { DeviceStatus } from '@/components/Device/DeviceStatus';
@@ -14,10 +14,12 @@ export const DashboardPage: React.FC = () => {
   const { xiaomiStatus, checkXiaomiStatus, updateStatusByDevices } = useXiaomi();
   const { useBreakpoint } = Grid;
   const screens = useBreakpoint();
+  const [refreshSignal, setRefreshSignal] = useState(0);
 
   // 播放状态变化时刷新设备状态
   const handlePlaybackChange = () => {
-    // 这里可以添加刷新播放状态的逻辑
+    // 触发左侧设备状态刷新（播放状态/音量等）
+    setRefreshSignal((x) => x + 1);
   };
 
   // 页面加载时检查状态并获取设备列表
@@ -76,7 +78,7 @@ export const DashboardPage: React.FC = () => {
                 // DeviceSelector内部已经处理了设备选择，这里主要用于外部状态同步
               }}
             />
-            <DeviceStatus device={selectedDevice} />
+            <DeviceStatus device={selectedDevice} refreshSignal={refreshSignal} />
           </Space>
         </Col>
 

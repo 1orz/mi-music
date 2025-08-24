@@ -2,7 +2,8 @@ import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 
 // 创建 axios 实例
 const http: AxiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1',
+  // 如果在环境变量中配置了 VITE_API_BASE_URL，则使用其值；否则在开发环境下默认走相对路径，交由 Vite 代理
+  baseURL: import.meta.env.VITE_API_BASE_URL || '/api/v1',
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
@@ -43,7 +44,7 @@ http.interceptors.response.use(
           const response = await axios.post('/auth/refresh', {
             refresh_token: refreshToken,
           }, {
-            baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1',
+            baseURL: import.meta.env.VITE_API_BASE_URL || '/api/v1',
           });
 
           if (response.data.success && response.data.access_token) {

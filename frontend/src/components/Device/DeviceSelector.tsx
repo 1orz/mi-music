@@ -78,6 +78,7 @@ export const DeviceSelector: React.FC<DeviceSelectorProps> = ({
             optionFilterProp="children"
             dropdownStyle={{ minWidth: '250px' }}
             allowClear
+            optionLabelProp="label"
             optionRender={(option) => {
               const device = devices.find(d => d.deviceID === option.value);
               if (!device) return null;
@@ -99,7 +100,7 @@ export const DeviceSelector: React.FC<DeviceSelectorProps> = ({
             }}
           >
             {devices.map((device) => (
-              <Option key={device.deviceID} value={device.deviceID}>
+              <Option key={device.deviceID} value={device.deviceID} label={device.alias || device.name || '未命名设备'}>
                 <div style={{ 
                   display: 'flex', 
                   alignItems: 'center', 

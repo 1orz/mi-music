@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { ConfigProvider, App as AntdApp } from 'antd';
 import zhCN from 'antd/locale/zh_CN';
 import { MainLayout } from '@/components/Layout/MainLayout';
+import { AppStateProvider } from '@/context/AppStateContext';
 import { ProtectedRoute } from '@/components/Auth/ProtectedRoute';
 import { DashboardPage } from '@/pages/Dashboard';
 import { SettingsPage } from '@/pages/Settings';
@@ -15,8 +16,6 @@ function App() {
     const path = window.location.pathname;
     if (path === '/settings') {
       setCurrentPage('settings');
-    } else if (path === '/devices') {
-      setCurrentPage('devices');
     } else if (path === '/' || path === '/login') {
       setCurrentPage('dashboard');
     } else {
@@ -50,8 +49,6 @@ function App() {
     switch (currentPage) {
       case 'dashboard':
         return <DashboardPage />;
-      case 'devices':
-        return <DashboardPage />; // 设备管理页面目前复用控制台
       case 'settings':
         return <SettingsPage />;
       default:
@@ -76,14 +73,16 @@ function App() {
       }}
     >
       <AntdApp>
-        <ProtectedRoute>
-          <MainLayout
-            selectedKey={currentPage}
-            onMenuSelect={handleMenuSelect}
-          >
-            {renderPage()}
-          </MainLayout>
-        </ProtectedRoute>
+        <AppStateProvider>
+          <ProtectedRoute>
+            <MainLayout
+              selectedKey={currentPage}
+              onMenuSelect={handleMenuSelect}
+            >
+              {renderPage()}
+            </MainLayout>
+          </ProtectedRoute>
+        </AppStateProvider>
       </AntdApp>
     </ConfigProvider>
   );

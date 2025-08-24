@@ -57,11 +57,6 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
       label: '控制台',
     },
     {
-      key: 'devices',
-      icon: <SoundOutlined />,
-      label: '设备管理',
-    },
-    {
       key: 'settings',
       icon: <SettingOutlined />,
       label: '设置',

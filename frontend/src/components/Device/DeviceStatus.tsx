@@ -14,9 +14,10 @@ const { Text } = Typography;
 
 interface DeviceStatusProps {
   device?: DeviceInfo | null;
+  refreshSignal?: number;
 }
 
-export const DeviceStatus: React.FC<DeviceStatusProps> = ({ device }) => {
+export const DeviceStatus: React.FC<DeviceStatusProps> = ({ device, refreshSignal }) => {
   const { selectedDevice, getDeviceSelector } = useDevices();
   const [playbackStatus, setPlaybackStatus] = useState<any>(null);
   const [volume, setVolume] = useState<number | null>(null);
@@ -64,12 +65,12 @@ export const DeviceStatus: React.FC<DeviceStatusProps> = ({ device }) => {
     ]);
   };
 
-  // 当设备变化时重新获取状态
+  // 当设备变化或外部刷新信号变化时重新获取状态
   useEffect(() => {
     if (currentDevice) {
       handleRefresh();
     }
-  }, [currentDevice?.deviceID]);
+  }, [currentDevice?.deviceID, refreshSignal]);
 
   if (!currentDevice) {
     return (

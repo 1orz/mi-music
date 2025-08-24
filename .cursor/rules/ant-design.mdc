@@ -1,0 +1,32 @@
+---
+globs: frontend/**/*.ts,frontend/**/*.tsx
+description: Guidelines for using Ant Design v5.27.1 and modern React/TypeScript in the frontend
+---
+# Ant Design (v5.27.1) & React 19 TypeScript Guidelines
+
+* 统一使用最新 Ant Design 5.27.1 版本；禁止混用旧版本 API。
+* 按需引入：直接从 `antd` 包中解构导入组件以启用 tree-shaking。
+
+```tsx
+import { Button, Form, Input } from 'antd';
+```
+
+* 严禁使用 `import Button from 'antd/es/button'` 等路径级别导入。
+* 使用 React 19 函数组件与 Hooks 编写 UI，避免使用 `React.Component` 类组件。
+* 强制 TypeScript 5 严格模式（`strict`, `noImplicitAny`, `exactOptionalPropertyTypes` 等）。
+* 组件导出示例：
+
+```tsx
+export const MyComponent: React.FC = () => {
+  const [count, setCount] = useState(0);
+  return (
+    <Button type="primary" onClick={() => setCount(count + 1)}>
+      点击 {count}
+    </Button>
+  );
+};
+```
+
+* 使用 `clsx`/`classnames` 处理条件 class；或采用 Ant Design Token + CSS-in-JS 方案。
+* 遵循 `@ant-design/eslint-plugin/recommended` 的 ESLint 规则，保持代码风格一致。
+* 使用 `@types/react` 19 类型定义。

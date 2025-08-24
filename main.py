@@ -12,6 +12,7 @@ import yaml
 from fastapi import FastAPI, HTTPException, Depends, status, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from aiohttp import ClientSession
 from cachetools import TTLCache
@@ -318,6 +319,22 @@ APP_DESCRIPTION = app_config.get('description', '基于 FastAPI 和 MiService �
 # 创建 FastAPI 应用
 app = FastAPI(title=APP_NAME, description=APP_DESCRIPTION, version=APP_VERSION, lifespan=lifespan)
 
+# CORS 中间件配置 - 解决前后端跨域问题
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:3000",  # 前端开发服务器
+        "http://127.0.0.1:3000",  # 前端开发服务器（备用）
+        "http://localhost:5173",  # Vite默认端口（备用）
+        "http://127.0.0.1:5173",  # Vite默认端口（备用）
+        # 生产环境时添加实际域名
+        # "https://your-domain.com",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],  # 允许所有HTTP方法
+    allow_headers=["*"],  # 允许所有请求头
+)
+
 """全局缓存控制中间件，防止敏感 JSON 被缓存"""
 @app.middleware("http")
 async def add_no_cache_headers(request: Request, call_next):
@@ -520,6 +537,21 @@ async def health_check():
     return {"detail": "服务健康"}
 
 
+@app.get("/api")
+async def api_info():
+    """API 信息和版本"""
+    return {
+        "name": APP_NAME,
+        "version": APP_VERSION,
+        "api_version": "v1",
+        "endpoints": {
+            "v1": "/api/v1",
+            "docs": "/docs",
+            "redoc": "/redoc"
+        }
+    }
+
+
 from routes import get_router
 from auth import JWTAuth
 
@@ -543,7 +575,9 @@ def _get_provider():
         raise HTTPException(status_code=500, detail="小米 Provider 未初始化")
     return mina_provider
 
-app.include_router(get_router(jwt_auth_for_routes, system_users, _get_provider))
+# 将所有API路由放在 /api/v1 前缀下
+api_router = get_router(jwt_auth_for_routes, system_users, _get_provider)
+app.include_router(api_router, prefix="/api/v1")
 
 
 """/mi/* 路由已移至 routes_mi.py"""

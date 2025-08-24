@@ -35,6 +35,7 @@ def get_router(jwt_auth: JWTAuth, system_users: dict, get_provider: Callable[[],
     @router.post("/auth/login", response_model=LoginResponse)
     async def auth_login(request: SystemLoginRequest):
         """系统登录，返回 access/refresh。"""
+        print(">>>", request.username, request.password, system_users)
         if not authenticate_system_user(request.username, request.password, system_users):
             raise HTTPException(status_code=401, detail="用户名或密码错误")
         token_data = {"sub": request.username}

@@ -1,4 +1,4 @@
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { message } from 'antd';
 import { xiaomiService } from '@/services/xiaomi';
 import { deviceService } from '@/services/device';
@@ -28,8 +28,16 @@ interface AppStateContextValue {
 const AppStateContext = createContext<AppStateContextValue | undefined>(undefined);
 
 export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // 小米
-  const [xiaomiStatus, setXiaomiStatus] = useState<XiaomiAccountStatus>({ logged_in: false, devices_count: 0 });
+  // 从 localStorage 恢复小米状态
+  const initialXiaomi: XiaomiAccountStatus = (() => {
+    try {
+      const cached = localStorage.getItem('xiaomiStatus');
+      if (cached) return JSON.parse(cached);
+    } catch {}
+    return { logged_in: false, devices_count: 0 };
+  })();
+
+  const [xiaomiStatus, setXiaomiStatus] = useState<XiaomiAccountStatus>(initialXiaomi);
   const [xiaomiLoading, setXiaomiLoading] = useState<boolean>(false);
 
   const checkXiaomiStatus = useCallback(async () => {
@@ -38,12 +46,14 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       const response = await xiaomiService.status();
       if (response.success && response.data) {
         setXiaomiStatus(response.data);
+        localStorage.setItem('xiaomiStatus', JSON.stringify(response.data));
       }
       return response;
     } catch (error: any) {
       console.error('检查小米账号状态失败:', error);
       message.error(error.response?.data?.detail || '检查小米账号状态失败');
       setXiaomiStatus({ logged_in: false });
+      localStorage.removeItem('xiaomiStatus');
     } finally {
       setXiaomiLoading(false);
     }
@@ -81,6 +91,7 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       if (response.success) {
         message.success(response.message || '小米账号已登出');
         setXiaomiStatus({ logged_in: false });
+        localStorage.removeItem('xiaomiStatus');
         return response;
       } else {
         message.error(response.message || '小米账号登出失败');
@@ -96,49 +107,74 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   }, []);
 
   const updateStatusByDevices = useCallback((devicesCount: number) => {
-    setXiaomiStatus((prev) => ({
-      ...prev,
-      logged_in: devicesCount > 0,
-      devices_count: devicesCount,
-    }));
+    setXiaomiStatus((prev) => {
+      const next = {
+        ...prev,
+        logged_in: devicesCount > 0,
+        devices_count: devicesCount,
+      };
+      // 仅在变化时写入
+      if (prev.logged_in !== next.logged_in || prev.devices_count !== next.devices_count) {
+        try { localStorage.setItem('xiaomiStatus', JSON.stringify(next)); } catch {}
+        return next;
+      }
+      return prev;
+    });
   }, []);
+
+  // Provider 挂载时自动检查后台登录状态，确保刷新在任何路由下都可正确获取
+  useEffect(() => {
+    checkXiaomiStatus();
+  }, [checkXiaomiStatus]);
 
   // 设备
   const [devices, setDevices] = useState<DeviceInfo[]>([]);
   const [selectedDevice, setSelectedDevice] = useState<DeviceInfo | null>(null);
   const [devicesLoading, setDevicesLoading] = useState<boolean>(false);
+  const isFetchingDevicesRef = useRef<boolean>(false);
+  const devicesHashRef = useRef<string>('');
 
   const fetchDevices = useCallback(async () => {
+    if (isFetchingDevicesRef.current) return; // 并发去重
+    isFetchingDevicesRef.current = true;
     setDevicesLoading(true);
     try {
       const response = await deviceService.getDevices();
       if (response.success && response.data) {
         const list = response.data;
-        setDevices(list);
-        // 确保有选中的设备
-        if (list.length > 0) {
-          setSelectedDevice((prev) => {
-            if (!prev || !list.find(d => d.deviceID === prev.deviceID)) {
-              return list[0];
-            }
-            return prev;
-          });
-        } else {
-          setSelectedDevice(null);
+        const newHash = JSON.stringify(list.map(d => [d.deviceID, d.alias, d.name, d.hardware]));
+        const changed = newHash !== devicesHashRef.current;
+        if (changed) {
+          devicesHashRef.current = newHash;
+          setDevices(list);
+          // 确保有选中的设备
+          if (list.length > 0) {
+            setSelectedDevice((prev) => {
+              if (!prev || !list.find(d => d.deviceID === prev.deviceID)) {
+                return list[0];
+              }
+              return prev;
+            });
+          } else {
+            setSelectedDevice(null);
+          }
         }
-        // 依据设备数量同步小米状态
+        // 同步登录状态（无论列表是否变化，都按数量修正一次，但内部仅在变化时 setState）
         updateStatusByDevices(list.length);
         return list;
       } else {
         message.error(response.message || '获取设备列表失败');
         setDevices([]);
+        devicesHashRef.current = '';
       }
     } catch (error: any) {
       console.error('获取设备列表失败:', error);
       message.error(error.response?.data?.detail || error.message || '获取设备列表失败');
       setDevices([]);
+      devicesHashRef.current = '';
     } finally {
       setDevicesLoading(false);
+      isFetchingDevicesRef.current = false;
     }
   }, [updateStatusByDevices]);
 

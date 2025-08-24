@@ -11,7 +11,7 @@ const { Title } = Typography;
 
 export const DashboardPage: React.FC = () => {
   const { selectedDevice, fetchDevices, devices } = useDevices();
-  const { xiaomiStatus, checkXiaomiStatus, updateStatusByDevices } = useXiaomi();
+  const { checkXiaomiStatus, updateStatusByDevices } = useXiaomi();
   const { useBreakpoint } = Grid;
   const screens = useBreakpoint();
   const [refreshSignal, setRefreshSignal] = useState(0);
@@ -29,13 +29,14 @@ export const DashboardPage: React.FC = () => {
       try {
         await fetchDevices();
       } catch (error) {
+        console.error('Failed to fetch devices:', error);
         // 如果获取设备失败，再检查小米账号状态
         await checkXiaomiStatus();
       }
     };
     
     initializeData();
-  }, []);
+  }, [fetchDevices, checkXiaomiStatus]);
 
   // 基于设备数据同步小米登录状态
   useEffect(() => {

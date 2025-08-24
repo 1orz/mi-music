@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { Select, Card, Typography, Space, Button, Spin } from 'antd';
 import { SoundOutlined, ReloadOutlined } from '@ant-design/icons';
 import { useDevices } from '@/hooks/useDevices';
@@ -19,6 +19,9 @@ export const DeviceSelector: React.FC<DeviceSelectorProps> = ({
 }) => {
   const { devices, selectedDevice, isLoading, fetchDevices, selectDevice } = useDevices();
   const { xiaomiStatus, checkXiaomiStatus } = useXiaomi();
+
+  // 固定 Select 弹层样式，防止每次渲染创建新对象导致内部测量组件重复 setState
+  const selectPopupStyles = useMemo(() => ({ popup: { root: { minWidth: 250 } } }), []);
 
   // 处理设备选择
   const handleDeviceChange = (deviceId: string) => {
@@ -71,18 +74,16 @@ export const DeviceSelector: React.FC<DeviceSelectorProps> = ({
             style={{ flex: 1 }}
             placeholder="选择要控制的设备"
             loading={isLoading}
-            value={(value?.deviceID || selectedDevice?.deviceID) ?? undefined}
+            value={(value?.deviceID || selectedDevice?.deviceID) ?? null}
             onChange={handleDeviceChange}
             notFoundContent={isLoading ? <Spin size="small" /> : "暂无设备"}
             showSearch
             optionFilterProp="children"
-            dropdownStyle={{ minWidth: '250px' }}
+            styles={selectPopupStyles}
             allowClear
-            optionLabelProp="label"
-            optionRender={(option) => {
-              const device = devices.find(d => d.deviceID === option.value);
-              if (!device) return null;
-              return (
+          >
+            {devices.map((device) => (
+              <Option key={device.deviceID} value={device.deviceID}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, width: '100%' }}>
                   <SoundOutlined style={{ flex: '0 0 auto' }} />
                   <div style={{ flex: 1, minWidth: 0 }}>
@@ -91,40 +92,6 @@ export const DeviceSelector: React.FC<DeviceSelectorProps> = ({
                     </div>
                     {device.hardware && (
                       <div style={{ fontSize: 12, color: '#999', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        {device.hardware}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              );
-            }}
-          >
-            {devices.map((device) => (
-              <Option key={device.deviceID} value={device.deviceID} label={device.alias || device.name || '未命名设备'}>
-                <div style={{ 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  gap: 8,
-                  width: '100%'
-                }}>
-                  <SoundOutlined />
-                  <div style={{ flex: 1, overflow: 'hidden' }}>
-                    <div style={{ 
-                      fontWeight: 'normal',
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                    }}>
-                      {device.alias || device.name || '未命名设备'}
-                    </div>
-                    {device.hardware && (
-                      <div style={{ 
-                        fontSize: '12px', 
-                        color: '#999',
-                        whiteSpace: 'nowrap',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                      }}>
                         {device.hardware}
                       </div>
                     )}

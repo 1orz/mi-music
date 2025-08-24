@@ -1,4 +1,4 @@
-import { useState, ReactNode } from 'react';
+import { useState, ReactNode, useMemo } from 'react';
 import { 
   Layout, 
   Menu, 
@@ -16,15 +16,12 @@ import {
   MenuFoldOutlined,
   MenuUnfoldOutlined,
   DashboardOutlined,
-  SoundOutlined,
   SettingOutlined,
   UserOutlined,
-  LogoutOutlined,
-  WifiOutlined
+  LogoutOutlined
 } from '@ant-design/icons';
 import { useAuth } from '@/hooks/useAuth';
 import { useXiaomi } from '@/hooks/useXiaomi';
-import { useDevices } from '@/hooks/useDevices';
 
 const { Header, Sider, Content } = Layout;
 const { Text } = Typography;
@@ -44,13 +41,12 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const { user, logout } = useAuth();
   const { xiaomiStatus, xiaomiLogout } = useXiaomi();
-  const { devices } = useDevices();
   
   // 响应式断点
   const { useBreakpoint } = Grid;
   const screens = useBreakpoint();
 
-  const menuItems = [
+  const menuItems = useMemo(() => ([
     {
       key: 'dashboard',
       icon: <DashboardOutlined />,
@@ -61,7 +57,13 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
       icon: <SettingOutlined />,
       label: '设置',
     }
-  ];
+  ]), []);
+
+  // 顶部标题跟随当前激活菜单
+  const currentTitle = useMemo(() => {
+    const item = menuItems.find(i => i.key === selectedKey);
+    return (item?.label as string) || '';
+  }, [selectedKey, menuItems]);
 
   const handleMenuClick = ({ key }: { key: string }) => {
     onMenuSelect?.(key);
@@ -102,16 +104,10 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   // 侧边栏内容组件
   const SiderContent = () => (
     <>
-      <div style={{ 
-        height: '64px', 
-        margin: '16px', 
-        background: 'rgba(255, 255, 255, 0.2)',
-        borderRadius: '6px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center'
-      }}>
-        <WifiOutlined style={{ color: 'white', fontSize: '24px' }} />
+      <div style={{ height: '64px', padding: '16px', display: 'flex', alignItems: 'center' }}>
+        {!collapsed && (
+          <Text style={{ color: '#fff', fontWeight: 600 }}>小米音响控制台</Text>
+        )}
       </div>
       
       <Menu
@@ -128,7 +124,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
     <Layout style={{ minHeight: '100vh' }}>
       {/* 桌面端侧边栏 */}
       {screens.lg && (
-        <Sider trigger={null} collapsible collapsed={collapsed}>
+        <Sider trigger={null} collapsible collapsed={collapsed} width={168} collapsedWidth={56}>
           <SiderContent />
         </Sider>
       )}
@@ -169,15 +165,8 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
             {!screens.xs && (
               <div>
                 <Text strong style={{ fontSize: screens.md ? '16px' : '14px' }}>
-                  小米音响控制台
+                  {currentTitle}
                 </Text>
-                {xiaomiStatus.logged_in && screens.sm && (
-                  <Badge 
-                    count={devices.length} 
-                    style={{ marginLeft: '12px' }}
-                    title={`已连接 ${devices.length} 台设备`}
-                  />
-                )}
               </div>
             )}
           </Space>
